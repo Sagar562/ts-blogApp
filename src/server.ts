@@ -2,6 +2,8 @@ import express, {Request, Response} from "express";
 import {sequelize} from "./config/database";
 import userRoutes from './routes/userRoutes';
 import postRoutes from './routes/postRoutes';
+import commentRoutes from './routes/commentRoutes';
+import likeRoutes from './routes/likeRoutes';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -12,6 +14,9 @@ const PORT = process.env.PORT;
 app.use(express.json());
 app.use('/api/v1', userRoutes);
 app.use('/api/v1', postRoutes);
+app.use('/api/v1', commentRoutes);
+app.use('/api/v1', likeRoutes);
+
 
 app.get('/', (req: Request, res: Response) => {
     res.send("This is home page of blog app");

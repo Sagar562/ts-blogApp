@@ -33,6 +33,8 @@ export const Post = sequelize.define<postInstance>('Post', {
         type: DataTypes.DATE,
         allowNull: true,
     },
+},   {
+    paranoid: true,
 });
 
 User.hasMany(Post, {foreignKey: 'userId', onDelete: 'CASCADE'});

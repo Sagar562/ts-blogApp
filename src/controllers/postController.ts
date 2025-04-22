@@ -15,8 +15,14 @@ const updatePostSchema = z.object({
     postContent: z.string(),
 });
 
+// zod delete schema
+const deletePostSchema = z.object({
+    postId: z.number(),
+});
+
 type createPostValidation = z.infer<typeof createPostSchema>;
 type updatePostValidation = z.infer<typeof updatePostSchema>;
+type deletePostValidation = z.infer<typeof deletePostSchema>;
 
 // create post 
 export const createPost = async (req: Request<{}, {}, createPostValidation>, res: Response) => {
@@ -102,12 +108,17 @@ export const updatePost = async (req: Request<{}, {}, updatePostValidation>, res
 
 };
 
-
 // get all post
 export const getAllPost = async (req: Request, res: Response) => {
 
     try {
-        const allPost = await Post.findAll({});
+        const allPost = await Post.findAll({
+            attributes: {exclude: ['deletedAt']},
+            include: [{
+                model: User,
+                attributes: ['name'],
+            }]
+        });
 
         res.status(200).json({
             allPost: allPost,
@@ -116,6 +127,53 @@ export const getAllPost = async (req: Request, res: Response) => {
         })
     }catch(error){
         console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        })
+    }
+};
+
+// delete post
+export const deletePost = async (req: Request<{}, {}, deletePostValidation>, res: Response) => {
+
+    try {
+        // console.log(req.body);
+        const postValidation = deletePostSchema.parse(req.body);
+        
+        const post = await Post.findByPk(postValidation.postId);
+        // console.log(post);
+        if (!post)
+        {
+            res.status(404).json({
+                success: false,
+                message: 'Post not found',
+            });
+            return;
+        }
+
+        const deletedPost = await Post.destroy({
+            where: {
+                id : postValidation.postId,
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Post deleted successfully',
+            deletedPost : deletedPost,
+        });
+
+    }catch(error) {
+        if (error instanceof z.ZodError) {
+            res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: error.errors,
+            });
+            return;
+        }
+
         res.status(500).json({
             success: false,
             message: 'Internal server error',

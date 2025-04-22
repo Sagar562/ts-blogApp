@@ -18,7 +18,7 @@ export const User = sequelize.define<UserInstance>('User', {
     email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
+        // unique: true,
     },
     age: {
         type: DataTypes.INTEGER,
